@@ -1,0 +1,19 @@
+name: MLCrystals
+channels:
+  - defaults
+  - conda-forge
+  - malramsay
+  - glotzer
+dependencies:
+  # Running Simulations
+  - python=3.6
+  - malramsay::sdrun=0.6.0
+  - malramsay::sdanalysis=0.6.6
+  # Dev tools
+  - pytest
+  - mypy
+  - black
+  # Interactive analysis
+  - jupyter
+  - altair>=2.0
+  - nbdime>=1.0
