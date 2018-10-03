@@ -12,10 +12,8 @@ jupyter:
 build:  ## Build docker image
 	docker build .
 
-
-clean:  ## Delete all compiled Python files
-	find . -type f -name "*.py[co]" -delete
-	find . -type d -name "__pycache__" -delete
+data: ## Download datasets
+	python src/data/download_dataset.py data/simulation/trimer
 
 lock: | ${lockfile}  ## Create or update the exact dependencies to install
 	docker run --rm\
