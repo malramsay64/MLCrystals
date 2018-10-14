@@ -27,11 +27,22 @@ def main(outdir):
 
     for crys, temp, press in product(crystals, temperatures, pressures):
         fname = f"dump-Trimer-P{press}-T{temp}-{crys}.gsd"
-        print(base_url + fname)
-        res = requests.get(base_url + fname, params={"download": 1})
+        res = requests.get(base_url + fname, params={"download": 1}, stream=True)
+        total_length = res.headers.get("content-length")
 
         with open(outdir / fname, "wb") as dst:
-            dst.write(res.content)
+            if total_length is None:
+                dst.write(res.content)
+            else:
+                with click.progressbar(
+                    res.iter_content(chunk_size=4096),
+                    length=(int(total_length) // 4096) + 1,
+                    show_eta=True,
+                    show_percent=True,
+                    label=fname,
+                ) as bar:
+                    for chunk in bar:
+                        dst.write(chunk)
 
 
 if __name__ == "__main__":

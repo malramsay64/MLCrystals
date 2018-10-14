@@ -12,8 +12,9 @@ jupyter:
 build:  ## Build docker image
 	docker build .
 
+.PHONY: data
 data: ## Download datasets
-	python src/data/download_dataset.py data/simulation/trimer
+	@python src/data/download_dataset.py data/simulation/trimer
 
 lock: | ${lockfile}  ## Create or update the exact dependencies to install
 	docker run --rm\
