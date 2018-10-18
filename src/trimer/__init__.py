@@ -9,9 +9,37 @@
 """Utilities for handling the trimer molecule."""
 
 import numpy as np
+from pathlib import Path
+from itertools import product
+from typing import List
 
 from bokeh.plotting import gridplot
 from sdanalysis.figures import plot_frame
+from sdanalysis import HoomdFrame
+import gsd.hoomd
+
+
+def read_files(
+    index: int = 0,
+    pressure: List[float] = 1.00,
+    temperature: List[float] = 0.40,
+    crystals: List[str] = ["p2", "p2gg", "pg"],
+) -> List[HoomdFrame]:
+    if isinstance(pressure, float):
+        pressure = [pressure]
+    if isinstance(temperature, float):
+        temperature = [temperature]
+    if isinstance(crystals, str):
+        crystals = [crystals]
+
+    data_dir = Path("../data/simulation/trimer")
+    snapshots = []
+    for press, temp, crys in product(pressure, temperature, crystals):
+        fname = f"dump-Trimer-P{press:.2f}-T{temp:.2f}-{crys}.gsd"
+        with gsd.hoomd.open(str(data_dir / fname)) as trj:
+            snapshots.append(HoomdFrame(trj[index]))
+
+    return snapshots
 
 
 def plot_grid(frames):
@@ -30,6 +58,10 @@ def plot_clustering(algorithm, X, snapshots):
         ]
     )
     return fig
+
+
+def plot_snapshots(snapshots):
+    return plot_grid([plot_frame(snap) for snap in snapshots])
 
 
 def classify_mols(snapshot, crystal, boundary_buffer=3.5):
