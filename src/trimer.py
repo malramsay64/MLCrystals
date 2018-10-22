@@ -16,6 +16,8 @@ from typing import List
 from bokeh.plotting import gridplot
 from sdanalysis.figures import plot_frame
 from sdanalysis import HoomdFrame
+from sdanalysis.order import compute_neighbours
+from scipy.sparse import coo_matrix
 import gsd.hoomd
 
 
@@ -49,8 +51,12 @@ def plot_grid(frames):
     return gridplot(frames, ncols=3)
 
 
-def plot_clustering(algorithm, X, snapshots):
-    cluster_assignment = np.split(algorithm.fit_predict(X), len(snapshots))
+def plot_clustering(algorithm, X, snapshots, fit=True):
+    if fit:
+        clusters = algorithm.fit_predict(X)
+    else:
+        clusters = algorithm.predict(X)
+    cluster_assignment = np.split(clusters, len(snapshots))
     fig = plot_grid(
         [
             plot_frame(snap, order_list=cluster, categorical_colour=True)
@@ -83,3 +89,16 @@ def classify_mols(snapshot, crystal, boundary_buffer=3.5):
     classification[is_crystal] = mapping[crystal]
     classification[boundary] = 4
     return classification
+
+
+def neighbour_connectivity(snapshot, max_neighbours=6, max_radius=5):
+    neighbours = compute_neighbours(
+        snapshot.box, snapshot.position, max_neighbours, max_radius
+    )
+    sparse_values = np.ones(neighbours.shape[0] * neighbours.shape[1])
+    sparse_coordinates = (
+        np.repeat(np.arange(neighbours.shape[0]), neighbours.shape[1]),
+        neighbours.flatten(),
+    )
+    connectivity = coo_matrix((sparse_values, sparse_coordinates))
+    return connectivity.toarray()
