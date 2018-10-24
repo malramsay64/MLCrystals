@@ -12,6 +12,7 @@ dependencies:
   - pytest
   - mypy
   - black
+  - isort
   # Interactive analysis
   - jupyter
   - altair>=2.0
