@@ -1,5 +1,7 @@
 # MLCrystals
 
+[![Binder](https://mybinder.org/badge.svg)](https://mybinder.org/v2/gh/malramsay64/MLCrystals/master?filepath=notebooks)
+
 The detection and classification of local structural order
 is a problem which has been studied extensively in a small number of systems,
 namely spherical particles and water.
