@@ -8,17 +8,17 @@
 
 """Utilities for handling the trimer molecule."""
 
-import numpy as np
+from itertools import product, count
 from pathlib import Path
-from itertools import product
 from typing import List
 
-from bokeh.plotting import gridplot
-from sdanalysis.figures import plot_frame
-from sdanalysis import HoomdFrame
-from sdanalysis.order import compute_neighbours
-from scipy.sparse import coo_matrix
 import gsd.hoomd
+import numpy as np
+from bokeh.plotting import gridplot
+from scipy.sparse import coo_matrix
+from sdanalysis import HoomdFrame
+from sdanalysis.figures import plot_frame
+from sdanalysis.order import compute_neighbours
 
 
 def read_files(
@@ -51,7 +51,7 @@ def plot_grid(frames):
     return gridplot(frames, ncols=3)
 
 
-def plot_clustering(algorithm, X, snapshots, fit=True):
+def plot_clustering(algorithm, X, snapshots, fit=True, max_frames=3):
     if fit:
         clusters = algorithm.fit_predict(X)
     else:
@@ -60,7 +60,8 @@ def plot_clustering(algorithm, X, snapshots, fit=True):
     fig = plot_grid(
         [
             plot_frame(snap, order_list=cluster, categorical_colour=True)
-            for snap, cluster in zip(snapshots, cluster_assignment)
+            for snap, cluster, i in zip(snapshots, cluster_assignment, count())
+            if i < max_frames
         ]
     )
     return fig
@@ -70,15 +71,19 @@ def plot_snapshots(snapshots):
     return plot_grid([plot_frame(snap) for snap in snapshots])
 
 
-def classify_mols(snapshot, crystal, boundary_buffer=3.5):
+def classify_mols(snapshot, crystal, boundary_buffer=3.5, is_2d: bool = True):
     """Classify molecules as crystalline, amorphous or boundary."""
     mapping = {"liq": 0, "p2": 1, "p2gg": 2, "pg": 3, "None": 4}
     position = snapshot.position
     # This gets the details of the box from the simulation
-    box = snapshot.box
+    box = snapshot.box[:3]
 
     # All axes have to be True, True == 1, use product for logical and operation
-    is_crystal = np.product(np.abs(position) < box[:3] / 3, axis=1).astype(bool)
+    position_mat = np.abs(position) < box[:3] / 3
+    if is_2d:
+        is_crystal = np.product(position_mat[:, :2], axis=1).astype(bool)
+    else:
+        is_crystal = np.product(position_mat, axis=1).astype(bool)
     boundary = np.logical_and(
         np.product(np.abs(position) < box[:3] / 3 + boundary_buffer, axis=1),
         np.product(np.abs(position) > box[:3] / 3 - boundary_buffer, axis=1),
