@@ -7,13 +7,19 @@ channels:
 dependencies:
   # Running Simulations
   - python=3.6
-  - malramsay::sdanalysis=0.6.6
   # Dev tools
   - pytest
   - mypy
   - black
   - isort
   # Interactive analysis
+  - malramsay::sdanalysis=0.6.6
   - jupyter
   - altair>=2.0
   - nbdime>=1.0
+  - matplotlib
+  - pandas
+  - pillow
+  - selenium
+  - phantomjs
+
