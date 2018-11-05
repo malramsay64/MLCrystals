@@ -6,6 +6,8 @@
 lockfile = environment-lock.txt
 env_name = MLCrystals
 
+.DEFAULT_GOAL = help
+
 jupyter:
 	docker run --rm --port 8888:8888
 
@@ -14,7 +16,9 @@ build:  ## Build docker image
 
 .PHONY: data
 data: ## Download datasets
-	@python src/data/download_dataset.py data/simulation/trimer
+	curl "https://zenodo.org/record/1477736/files/dataset.tar.xz?download=1" -o data/dataset.tar.xz
+	mkdir -p data/simulation/trimer
+	tar xvJf data/dataset.tar.xz -C data/simulation/trimer
 
 lock: | ${lockfile}  ## Create or update the exact dependencies to install
 	docker run --rm\
