@@ -13,7 +13,7 @@ dependencies:
   - black
   - isort
   # Interactive analysis
-  - malramsay::sdanalysis=0.6.6
+  - malramsay::sdanalysis=0.6.8
   - jupyter
   - altair>=2.0
   - nbdime>=1.0
