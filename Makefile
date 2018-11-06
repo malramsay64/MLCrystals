@@ -14,6 +14,13 @@ jupyter:
 build:  ## Build docker image
 	docker build .
 
+.PHONY: talks
+talks: talks/2018-11-06-ICYRAM.pdf ## Compile talks
+
+%.pdf: %.tex
+	latexmk $< -output-directory=talks/output -xelatex
+	cp talks/output/$(notdir $@) $@
+
 .PHONY: data
 data: ## Download datasets
 	curl -L "https://drive.google.com/uc?export=download&id=1EslO883MNH_1ebQrKkjozKbLGakbKzr2" -o data/dataset.tar.xz
