@@ -75,7 +75,7 @@
 
 \end{frame}
 
-\begin{frame}{Follow along}
+\begin{frame}[label=follow-along]{Follow along}
 
   \begin{center}
     \LARGE
@@ -183,10 +183,11 @@ hoomd.run(10e3)
 
   \color{usydred}
   \LARGE
-  What does this look like in a Statistical Dynamics setting?
+  What does this look like in Statistical Dynamics?
 
 \end{frame}
 
+\againframe{follow-along}
 
 \begin{frame}{Trimer Model}
 
@@ -220,74 +221,53 @@ hoomd.run(10e3)
 \end{frame}
 
 
-\section{Clustering}
-\begin{frame}{Clustering}
+\section{Machine Learning}
+\begin{frame}{Machine Learning}
 
   \begin{itemize}
-    \item How do I label 1000s of molecules?
-    \item How do I know what structure is important?
-    \item Which structures keep appearing?
+    \item Create a dataset of correctly labelled values
+    \item Split data set
+      \begin{itemize}
+        \item 80\% Training
+        \item 20\% Test
+      \end{itemize}
+    \item Score with the unseen Test dataset
   \end{itemize}
 
 \end{frame}
 
 
-\begin{frame}[fragile]{Clustering Code}
-
-  \begin{lstlisting}[language=Python]
-from sklearn import cluster
-
-dbscan = cluster.DBSCAN(min_samples=400, eps=0.9)
-x = relative_orientation(MD_Configuration)
-clusters = dbscan.fit_predict()
-  \end{lstlisting}
-
-\end{frame}
-
-
-\begin{frame}{Clustering Trimer Results}
+\begin{frame}{Classification Results}
   \begin{columns}
     \begin{column}{0.33\textwidth}
-      \includegraphics[width=\textwidth]{clustering_results_p2.png}
+      \includegraphics[width=\textwidth]{classification_results_p2.png}
     \end{column}
     \begin{column}{0.33\textwidth}
-      \includegraphics[width=\textwidth]{clustering_results_p2gg.png}
+      \includegraphics[width=\textwidth]{classification_results_p2gg.png}
     \end{column}
     \begin{column}{0.33\textwidth}
-      \includegraphics[width=\textwidth]{clustering_results_pg.png}
+      \includegraphics[width=\textwidth]{classification_results_pg.png}
     \end{column}
   \end{columns}
 \end{frame}
 
 
-\begin{frame}{What now?}
+\begin{frame}{How can we improve?}
 
   \begin{itemize}
-    \item Clusters are labelled training data
-    \item Develop model to apply to a range of structures
-  \end{itemize}
-
-\end{frame}
-
-
-\begin{frame}{Conclusion}
-
-  \begin{itemize}
-    \item Features are the most important part of machine learning
-    \item Clustering can identify structure within a configuration
-    \item Clusters as training data allows for developing a model
-  \end{itemize}
-
-\end{frame}
-
-
-\begin{frame}{How Can I get Involved?}
-
-  \begin{itemize}
-    \item Make datasets available (Zenodo or similar)
-    \item Check out my project page \url{github.com/malramsay64/MLCrystals}
-    \item Try it out yourself
-    \item Get in touch \href{mailto:mram5995@uni.sydney.edu.au}{mram5995@uni.sydney.edu.au}
+    \item Make datasets freely available
+      \begin{itemize}
+        \item \item{zenodo.org}
+      \end{itemize}
+    \item Code is important for anyone replicating your work
+      \begin{itemize}
+        \item \url{github.com/malramsay64}
+      \end{itemize}
+    \item Make it easy to get started
+      \begin{itemize}
+        \item Jupyter Notebooks
+        \item \url{mybinder.org}
+      \end{itemize}
   \end{itemize}
 
 \end{frame}
