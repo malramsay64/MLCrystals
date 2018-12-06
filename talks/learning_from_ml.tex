@@ -35,9 +35,14 @@
     stringstyle=\color{myred}      % String colour
 }
 
-\title{\large Learning from Machine Learning}
+\title{\large Learning from Machine~Learning}
 \date{\today}
-\author[Malcolm]{Malcolm Ramsay \\ \faTwitter~@malramsay64 \\ \faGithub~malramsay64}
+\author[Malcolm]{%
+  Malcolm Ramsay \\
+  \vspace{0.8ex}
+  \faTwitter~@malramsay64 \\
+  \faGithub~malramsay64
+}
 
 \usetheme{usyd}
 % To use the logobar theme use the line below instead
@@ -75,22 +80,6 @@
 
 \end{frame}
 
-\begin{frame}[label=follow-along]{Follow along}
-
-  \begin{center}
-    \LARGE
-    \url{demo.malramsay.com}
-  \end{center}
-
-  \begin{itemize}
-    \item Shift + Enter to run code
-    \item Run all cells from the top
-  \end{itemize}
-
-  All code and more available at \\
-  \url{github.com/malramsay64/MLCrystals}
-
-\end{frame}
 
 
 \begin{frame}{}
@@ -183,11 +172,27 @@ hoomd.run(10e3)
 
   \color{usydred}
   \LARGE
-  What does this look like in Statistical Dynamics?
+  What does this look like \\
+  in Statistical Dynamics?
 
 \end{frame}
 
-\againframe{follow-along}
+\begin{frame}[label=follow-along]{Follow along}
+
+  \begin{center}
+    \LARGE
+    \url{demo.malramsay.com}
+  \end{center}
+
+  \begin{itemize}
+    \item Shift + Enter to run code
+    \item Run all cells from the top
+  \end{itemize}
+
+  All code and more available at \\
+  \url{github.com/malramsay64/MLCrystals}
+
+\end{frame}
 
 \begin{frame}{Trimer Model}
 
@@ -226,6 +231,7 @@ hoomd.run(10e3)
 
   \begin{itemize}
     \item Create a dataset of correctly labelled values
+    \item Calculate features
     \item Split data set
       \begin{itemize}
         \item 80\% Training
@@ -240,13 +246,19 @@ hoomd.run(10e3)
 \begin{frame}{Classification Results}
   \begin{columns}
     \begin{column}{0.33\textwidth}
+      \center
       \includegraphics[width=\textwidth]{classification_results_p2.png}
+      p2
     \end{column}
     \begin{column}{0.33\textwidth}
+      \center
       \includegraphics[width=\textwidth]{classification_results_p2gg.png}
+      p2gg
     \end{column}
     \begin{column}{0.33\textwidth}
+      \center
       \includegraphics[width=\textwidth]{classification_results_pg.png}
+      pg
     \end{column}
   \end{columns}
 \end{frame}
@@ -257,7 +269,7 @@ hoomd.run(10e3)
   \begin{itemize}
     \item Make datasets freely available
       \begin{itemize}
-        \item \item{zenodo.org}
+        \item \url{zenodo.org}
       \end{itemize}
     \item Code is important for anyone replicating your work
       \begin{itemize}
@@ -267,9 +279,20 @@ hoomd.run(10e3)
       \begin{itemize}
         \item Jupyter Notebooks
         \item \url{mybinder.org}
+        \item \url{colab.research.google.com}
       \end{itemize}
   \end{itemize}
 
 \end{frame}
+
+\begin{frame}{Acknowledgements}
+
+  \begin{itemize}
+    \item Peter Harrowell
+    \item USYD HPC Facility Artemis
+  \end{itemize}
+
+\end{frame}
+
 
 \end{document}
