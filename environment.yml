@@ -6,14 +6,15 @@ channels:
   - glotzer
 dependencies:
   # Running Simulations
-  - python=3.6
+  - python
   # Dev tools
   - pytest
   - mypy
   - black
   - isort
+  - pylint
   # Interactive analysis
-  - malramsay::sdanalysis=0.6.8
+  - malramsay::sdanalysis=0.7.13
   - jupyter
   - altair>=2.0
   - nbdime>=1.0
