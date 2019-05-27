@@ -8,9 +8,11 @@
 
 """Utilities for handling the trimer molecule."""
 
+import glob
+import logging
 from itertools import count, product
 from pathlib import Path
-from typing import List
+from typing import List, Tuple
 
 import gsd.hoomd
 import matplotlib.pyplot as plt
@@ -20,29 +22,37 @@ from scipy.sparse import coo_matrix
 from sdanalysis import HoomdFrame
 from sdanalysis.figures import plot_frame
 from sdanalysis.order import compute_neighbours
+from sdanalysis.util import get_filename_vars, variables
+from sklearn.metrics import confusion_matrix
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
-def read_files(
+def read_all_files(
+    pathname: Path, index: int = 0, pattern: str = "dump-Trimer-*.gsd"
+) -> List[Tuple[variables, HoomdFrame]]:
+    pathname = Path(pathname)
+    snapshots = []
+    for filename in glob.glob(str(pathname / pattern)):
+        logger.debug("Reading %s", Path(filename).stem)
+        with gsd.hoomd.open(str(filename)) as trj:
+            snapshots.append((get_filename_vars(filename), HoomdFrame(trj[index])))
+    return snapshots
+
+
+def read_file(
     index: int = 0,
-    pressure: List[float] = 1.00,
-    temperature: List[float] = 0.40,
-    crystals: List[str] = ["p2", "p2gg", "pg"],
-) -> List[HoomdFrame]:
-    if isinstance(pressure, float):
-        pressure = [pressure]
-    if isinstance(temperature, float):
-        temperature = [temperature]
-    if isinstance(crystals, str):
-        crystals = [crystals]
+    pressure: float = 1.00,
+    temperature: float = 0.40,
+    crystal: str = "p2",
+    prefix: str = "dump",
+) -> HoomdFrame:
 
     data_dir = Path("../data/simulation/trimer")
-    snapshots = []
-    for press, temp, crys in product(pressure, temperature, crystals):
-        fname = f"dump-Trimer-P{press:.2f}-T{temp:.2f}-{crys}.gsd"
-        with gsd.hoomd.open(str(data_dir / fname)) as trj:
-            snapshots.append(HoomdFrame(trj[index]))
-
-    return snapshots
+    fname = f"{prefix}-Trimer-P{pressure:.2f}-T{temperature:.2f}-{crystal}.gsd"
+    with gsd.hoomd.open(str(data_dir / fname)) as trj:
+        return HoomdFrame(trj[index])
 
 
 def plot_grid(frames):
@@ -91,7 +101,7 @@ def classify_mols(snapshot, crystal, boundary_buffer=3.5, is_2d: bool = True):
     )
 
     # Create classification array
-    classification = np.zeros(len(snapshot))
+    classification = np.zeros(len(snapshot), dtype=int)
     classification[is_crystal] = mapping[crystal]
     classification[boundary] = 4
     return classification
@@ -111,12 +121,14 @@ def neighbour_connectivity(snapshot, max_neighbours=6, max_radius=5):
 
 
 def plot_confusion_matrix(
-    cm, classes, normalize=True, title="Confusion matrix", cmap=plt.cm.Blues
+    y_true, y_pred, classes, normalize=True, title="Confusion matrix", cmap=plt.cm.Blues
 ):
     """
     This function prints and plots the confusion matrix.
     Normalization can be applied by setting `normalize=True`.
     """
+    cm = confusion_matrix(y_true, y_pred)
+
     if normalize:
         cm = cm.astype("float") / cm.sum(axis=1)[:, np.newaxis]
         print("Normalized confusion matrix")
