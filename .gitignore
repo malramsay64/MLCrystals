@@ -1,5 +1,10 @@
 # Datafiles
-data/*
+data/simulation/*/*
+
+!data/simulation/*/experiment.yml
+
+*.tar.gz
+*.tar.xz
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
