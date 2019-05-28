@@ -22,7 +22,7 @@ from scipy.sparse import coo_matrix
 from sdanalysis import HoomdFrame
 from sdanalysis.figures import plot_frame
 from sdanalysis.order import compute_neighbours
-from sdanalysis.util import get_filename_vars, variables
+from sdanalysis.util import Variables, get_filename_vars
 from sklearn.metrics import confusion_matrix
 
 logger = logging.getLogger(__name__)
@@ -31,7 +31,7 @@ logger.setLevel(logging.DEBUG)
 
 def read_all_files(
     pathname: Path, index: int = 0, pattern: str = "dump-Trimer-*.gsd"
-) -> List[Tuple[variables, HoomdFrame]]:
+) -> List[Tuple[Variables, HoomdFrame]]:
     pathname = Path(pathname)
     snapshots = []
     for filename in glob.glob(str(pathname / pattern)):
