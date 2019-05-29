@@ -27,6 +27,10 @@ data: ## Download datasets
 	mkdir -p data/simulation/trimer
 	tar xvJf data/dataset.tar.xz -C data/simulation/trimer
 
+.PHONY: figures
+figures:
+	python3 src/figures.py labelled-config data/simulation/dataset/output/dump-Trimer-P1.00-T0.45-p2.gsd -i 2
+
 lock: | ${lockfile}  ## Create or update the exact dependencies to install
 	docker run --rm\
 		--volume $(shell pwd):/srv:z \
