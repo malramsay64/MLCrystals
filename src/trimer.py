@@ -37,7 +37,14 @@ def read_all_files(
     for filename in glob.glob(str(pathname / pattern)):
         logger.debug("Reading %s", Path(filename).stem)
         with gsd.hoomd.open(str(filename)) as trj:
-            snapshots.append((get_filename_vars(filename), HoomdFrame(trj[index])))
+            try:
+                snapshots.append((get_filename_vars(filename), HoomdFrame(trj[index])))
+            except IndexError:
+                continue
+    if not snapshots:
+        logger.warning(
+            "There were no files found with a configuration at index %s", index
+        )
     return snapshots
 
 
