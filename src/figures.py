@@ -13,14 +13,36 @@ notebook interface or on the command line.
 
 """
 
-from typing import List, Tuple
+from typing import Any, Dict, List, Tuple
 
+import altair.vegalite.v2 as alt
 import click
 import gsd.hoomd
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 from bokeh.io import export_png
 from bokeh.plotting import Figure
 from sdanalysis import HoomdFrame
 from sdanalysis.figures import plot_frame
+from sklearn import manifold
+
+
+def my_theme() -> Dict[str, Any]:
+    """Define an Altair theme to use in all visualisations.
+
+    This defines a simple theme, specifying the aspect ratio of 4:6
+    and removing the grid from the figure which is distracting.
+
+    """
+    return {"config": {"view": {"height": 400, "width": 600}, "axis": {"grid": False}}}
+
+
+def use_my_theme():
+    """Register and my custom Altair theme."""
+    # register and enable the theme
+    alt.themes.register("my_theme", my_theme)
+    alt.themes.enable("my_theme")
 
 
 def cell_regions(
@@ -144,6 +166,36 @@ def plot_labelled_config(snapshot: HoomdFrame) -> Figure:
     )
 
     return style_snapshot(fig)
+
+
+def plot_tsne_reduction(x_values: np.ndarray, y_values: np.ndarray) -> alt.Chart:
+    """Perform a tsne dimensionality reduction on a dataset"""
+    tsne = manifold.TSNE()
+    x_transformed = tsne.fit_transform(x_values)
+
+    data = pd.DataFrame(
+        {
+            "dim1": x_transformed[:, 0],
+            "dim2": x_transformed[:, 1],
+            "class": pd.Categorical.from_codes(
+                y_values, ["Liquid", "p2", "p2gg", "pg"]
+            ),
+        }
+    )
+
+    use_my_theme()
+
+    chart = (
+        alt.Chart(data)
+        .mark_circle(opacity=0.5)
+        .encode(
+            x=alt.X("dim1:Q", title="Dimension 1"),
+            y=alt.Y("dim2:Q", title="Dimension 2"),
+            color=alt.Color("class:N", title="Class"),
+        )
+    )
+
+    return chart
 
 
 @main.command()
