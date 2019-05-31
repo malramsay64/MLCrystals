@@ -14,7 +14,7 @@ dependencies:
   - isort
   - pylint
   # Interactive analysis
-  - malramsay::sdanalysis=0.7.14
+  - malramsay::sdanalysis=0.7.15
   - scikit-learn==0.21.*
   - jupyter
   - altair>=2.0
