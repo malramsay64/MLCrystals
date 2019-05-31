@@ -17,6 +17,7 @@ from typing import List, Tuple
 import gsd.hoomd
 import matplotlib.pyplot as plt
 import numpy as np
+from bokeh import palettes
 from bokeh.plotting import gridplot
 from scipy.sparse import coo_matrix
 from sdanalysis import HoomdFrame
@@ -69,20 +70,29 @@ def plot_grid(frames):
     return gridplot(frames, ncols=3)
 
 
+def plot_configuration_grid(snapshots, categories, max_frames=3):
+    if len(np.unique(categories)) < 10:
+        colormap = palettes.Category10_10
+    else:
+        colormap = palettes.Category20_20
+    cluster_assignment = np.split(categories, len(snapshots))
+    return plot_grid(
+        [
+            plot_frame(
+                snap, order_list=cluster, categorical_colour=True, colormap=colormap
+            )
+            for snap, cluster, i in zip(snapshots, cluster_assignment, count())
+            if i < max_frames
+        ]
+    )
+
+
 def plot_clustering(algorithm, X, snapshots, fit=True, max_frames=3):
     if fit:
         clusters = algorithm.fit_predict(X)
     else:
         clusters = algorithm.predict(X)
-    cluster_assignment = np.split(clusters, len(snapshots))
-    fig = plot_grid(
-        [
-            plot_frame(snap, order_list=cluster, categorical_colour=True)
-            for snap, cluster, i in zip(snapshots, cluster_assignment, count())
-            if i < max_frames
-        ]
-    )
-    return fig
+    return plot_configuration_grid(snapshots, clusters, max_frames)
 
 
 def plot_snapshots(snapshots):
