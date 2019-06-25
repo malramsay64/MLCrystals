@@ -15,7 +15,7 @@ notebook interface or on the command line.
 
 from typing import Any, Dict, List, Tuple
 
-import altair.vegalite.v2 as alt
+import altair as alt
 import click
 import gsd.hoomd
 import matplotlib.pyplot as plt
