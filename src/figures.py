@@ -186,7 +186,7 @@ def plot_tsne_reduction(x_values: np.ndarray, y_values: np.ndarray) -> alt.Chart
     use_my_theme()
 
     chart = (
-        alt.Chart(data)
+        alt.Chart(data.sample(n=3000))
         .mark_circle(opacity=0.5)
         .encode(
             x=alt.X("dim1:Q", title="Dimension 1"),
