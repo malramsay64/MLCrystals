@@ -33,6 +33,21 @@ logger.setLevel(logging.DEBUG)
 def read_all_files(
     pathname: Path, index: int = 0, pattern: str = "dump-Trimer-*.gsd"
 ) -> List[Tuple[Variables, HoomdFrame]]:
+    """Read all the gsd files from a directory given a pattern.
+
+    A utility function for getting reading all the gsd files from a given directory,
+    with the ability to use a pattern to match a subset.
+
+    Args:
+        pathname: The directory from which the files will be read
+        index: The index of the snapshot to read for each trajectory.
+        pattern: The pattern passed to the glob function to match.
+
+    Returns:
+        A list of tuples containing the variables for a configuration, established from the filename,
+        along with the frame.
+
+    """
     pathname = Path(pathname)
     snapshots = []
     for filename in glob.glob(str(pathname / pattern)):
