@@ -72,7 +72,7 @@ def read_file(
     prefix: str = "dump",
 ) -> HoomdFrame:
 
-    data_dir = Path("../data/simulation/trimer")
+    data_dir = Path("../data/simulation/dataset/output")
     fname = f"{prefix}-Trimer-P{pressure:.2f}-T{temperature:.2f}-{crystal}.gsd"
     with gsd.hoomd.open(str(data_dir / fname)) as trj:
         return HoomdFrame(trj[index])
