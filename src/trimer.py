@@ -74,8 +74,14 @@ def read_file(
 
     data_dir = Path("../data/simulation/dataset/output")
     fname = f"{prefix}-Trimer-P{pressure:.2f}-T{temperature:.2f}-{crystal}.gsd"
-    with gsd.hoomd.open(str(data_dir / fname)) as trj:
-        return HoomdFrame(trj[index])
+    filename = data_dir / fname
+    if not filename.exists():
+        raise FileNotFoundError(read_file)
+    with gsd.hoomd.open(str(filename)) as trj:
+        try:
+            return HoomdFrame(trj[index])
+        except IndexError:
+            raise IndexError(f"Index {index} not found in trajectory.")
 
 
 def plot_grid(frames):
