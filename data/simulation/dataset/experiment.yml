@@ -1,0 +1,93 @@
+name: Dataset
+
+jobs:
+  - command:
+      creates: Trimer-P{pressure:.2f}-T{melt_temp:.2f}-{space_group}.gsd
+      cmd: >
+        sdrun
+        --pressure {pressure}
+        --init-temp {create_temp}
+        --temperature {melt_temp}
+        --space-group {space_group}
+        --lattice-lengths {cell_dims}
+        --output {output}
+        --num-steps {create_steps}
+        create
+        --interface
+        {creates}
+
+  - command:
+      requires: Trimer-P{pressure:.2f}-T{melt_temp:.2f}-{space_group}.gsd
+      creates: Trimer-P{pressure:.2f}-T{temperature:.2f}-{space_group}.gsd
+      cmd: >
+        sdrun
+        --pressure {pressure}
+        --init-temp {melt_temp}
+        --temperature {temperature}
+        --space-group {space_group}
+        --output {output}
+        --num-steps {equil_steps}
+        equil
+        --equil-type {equil_type}
+        {requires}
+        {creates}
+
+  - command:
+      requires: Trimer-P{pressure:.2f}-T{temperature:.2f}-{space_group}.gsd
+      creates: output/dump-Trimer-P{pressure:.2f}-T{temperature:.2f}-{space_group}.gsd
+      cmd: >
+        sdrun
+        --pressure {pressure}
+        --temperature {temperature}
+        --space-group {space_group}
+        --output {output}
+        --output-interval {output_interval}
+        --num-steps {steps}
+        prod
+        {requires}
+
+variables:
+  create_temp: 0.40
+  create_steps: 500_000
+  equil_type: interface
+  equil_steps: 10_000
+  output: output
+  output_interval: 10_000
+  steps: 100_000
+  zip:
+    - space_group:
+        - p2
+        - pg
+        - p2gg
+      cell_dims:
+        - 48 42
+        - 48 42
+        - 48 21
+  chain:
+    - pressure: 13.50
+      melt_temp: 5.00
+      temperature:
+        - 1.30
+        - 1.40
+        - 1.50
+        - 1.60
+        - 1.80
+    - pressure: 1.00
+      melt_temp: 1.50
+      temperature:
+        - 0.40
+        - 0.45
+        - 0.50
+        - 0.60
+        - 0.80
+
+# pbs:
+  # setup:
+    # - export PATH="$HOME/.miniconda/bin:$PATH"
+    # - source activate crystal
+  # cpus: 8
+  # memory: 16gb
+  # walltime: "504:00:00"
+  # project: PRJ-CrysGrowth
+  # o: logs
+  # j: oe

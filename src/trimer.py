@@ -8,41 +8,80 @@
 
 """Utilities for handling the trimer molecule."""
 
+import glob
+import logging
 from itertools import count, product
 from pathlib import Path
-from typing import List
+from typing import List, Tuple
 
 import gsd.hoomd
 import matplotlib.pyplot as plt
 import numpy as np
+from bokeh import palettes
 from bokeh.plotting import gridplot
 from scipy.sparse import coo_matrix
 from sdanalysis import HoomdFrame
 from sdanalysis.figures import plot_frame
 from sdanalysis.order import compute_neighbours
+from sdanalysis.util import Variables, get_filename_vars
+from sklearn.metrics import confusion_matrix
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
-def read_files(
-    index: int = 0,
-    pressure: List[float] = 1.00,
-    temperature: List[float] = 0.40,
-    crystals: List[str] = ["p2", "p2gg", "pg"],
-) -> List[HoomdFrame]:
-    if isinstance(pressure, float):
-        pressure = [pressure]
-    if isinstance(temperature, float):
-        temperature = [temperature]
-    if isinstance(crystals, str):
-        crystals = [crystals]
+def read_all_files(
+    pathname: Path, index: int = 0, pattern: str = "dump-Trimer-*.gsd"
+) -> List[Tuple[Variables, HoomdFrame]]:
+    """Read all the gsd files from a directory given a pattern.
 
-    data_dir = Path("../data/simulation/trimer")
+    A utility function for getting reading all the gsd files from a given directory,
+    with the ability to use a pattern to match a subset.
+
+    Args:
+        pathname: The directory from which the files will be read
+        index: The index of the snapshot to read for each trajectory.
+        pattern: The pattern passed to the glob function to match.
+
+    Returns:
+        A list of tuples containing the variables for a configuration, established from the filename,
+        along with the frame.
+
+    """
+    pathname = Path(pathname)
     snapshots = []
-    for press, temp, crys in product(pressure, temperature, crystals):
-        fname = f"dump-Trimer-P{press:.2f}-T{temp:.2f}-{crys}.gsd"
-        with gsd.hoomd.open(str(data_dir / fname)) as trj:
-            snapshots.append(HoomdFrame(trj[index]))
-
+    for filename in glob.glob(str(pathname / pattern)):
+        logger.debug("Reading %s", Path(filename).stem)
+        with gsd.hoomd.open(str(filename)) as trj:
+            try:
+                snapshots.append((get_filename_vars(filename), HoomdFrame(trj[index])))
+            except IndexError:
+                continue
+    if not snapshots:
+        logger.warning(
+            "There were no files found with a configuration at index %s", index
+        )
     return snapshots
+
+
+def read_file(
+    index: int = 0,
+    pressure: float = 1.00,
+    temperature: float = 0.40,
+    crystal: str = "p2",
+    prefix: str = "dump",
+) -> HoomdFrame:
+
+    data_dir = Path("../data/simulation/dataset/output")
+    fname = f"{prefix}-Trimer-P{pressure:.2f}-T{temperature:.2f}-{crystal}.gsd"
+    filename = data_dir / fname
+    if not filename.exists():
+        raise FileNotFoundError(read_file)
+    with gsd.hoomd.open(str(filename)) as trj:
+        try:
+            return HoomdFrame(trj[index])
+        except IndexError:
+            raise IndexError(f"Index {index} not found in trajectory.")
 
 
 def plot_grid(frames):
@@ -52,20 +91,29 @@ def plot_grid(frames):
     return gridplot(frames, ncols=3)
 
 
+def plot_configuration_grid(snapshots, categories, max_frames=3):
+    if len(np.unique(categories)) < 10:
+        colormap = palettes.Category10_10
+    else:
+        colormap = palettes.Category20_20
+    cluster_assignment = np.split(categories, len(snapshots))
+    return plot_grid(
+        [
+            plot_frame(
+                snap, order_list=cluster, categorical_colour=True, colormap=colormap
+            )
+            for snap, cluster, i in zip(snapshots, cluster_assignment, count())
+            if i < max_frames
+        ]
+    )
+
+
 def plot_clustering(algorithm, X, snapshots, fit=True, max_frames=3):
     if fit:
         clusters = algorithm.fit_predict(X)
     else:
         clusters = algorithm.predict(X)
-    cluster_assignment = np.split(clusters, len(snapshots))
-    fig = plot_grid(
-        [
-            plot_frame(snap, order_list=cluster, categorical_colour=True)
-            for snap, cluster, i in zip(snapshots, cluster_assignment, count())
-            if i < max_frames
-        ]
-    )
-    return fig
+    return plot_configuration_grid(snapshots, clusters, max_frames)
 
 
 def plot_snapshots(snapshots):
@@ -91,7 +139,7 @@ def classify_mols(snapshot, crystal, boundary_buffer=3.5, is_2d: bool = True):
     )
 
     # Create classification array
-    classification = np.zeros(len(snapshot))
+    classification = np.zeros(len(snapshot), dtype=int)
     classification[is_crystal] = mapping[crystal]
     classification[boundary] = 4
     return classification
@@ -111,12 +159,14 @@ def neighbour_connectivity(snapshot, max_neighbours=6, max_radius=5):
 
 
 def plot_confusion_matrix(
-    cm, classes, normalize=True, title="Confusion matrix", cmap=plt.cm.Blues
+    y_true, y_pred, classes, normalize=True, title="Confusion matrix", cmap=plt.cm.Blues
 ):
     """
     This function prints and plots the confusion matrix.
     Normalization can be applied by setting `normalize=True`.
     """
+    cm = confusion_matrix(y_true, y_pred)
+
     if normalize:
         cm = cm.astype("float") / cm.sum(axis=1)[:, np.newaxis]
         print("Normalized confusion matrix")

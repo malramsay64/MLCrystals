@@ -1,5 +1,18 @@
 # Datafiles
-data/*
+data/simulation/*/*
+
+!data/simulation/*/experiment.yml
+
+*.tar.gz
+*.tar.xz
+
+# altair data files
+altair-data-*
+
+# Unimportant Generated figures
+notebooks/*.png
+notebooks/*.pdf
+notebooks/*.svg
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
