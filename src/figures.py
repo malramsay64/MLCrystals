@@ -168,6 +168,22 @@ def plot_labelled_config(snapshot: HoomdFrame) -> Figure:
     return style_snapshot(fig)
 
 
+def plot_dimensionality_reduction(X, y):
+    data = pd.DataFrame({"dim1": X[:, 0], "dim2": X[:, 1], "class": y})
+
+    chart = (
+        alt.Chart(data.sample(n=3000))
+        .mark_circle(opacity=0.5)
+        .encode(
+            x=alt.X("dim1:Q", title="Dimension 1"),
+            y=alt.Y("dim2:Q", title="Dimension 2"),
+            color=alt.Color("class:N", title="Class"),
+        )
+    )
+
+    return chart
+
+
 def plot_tsne_reduction(x_values: np.ndarray, y_values: np.ndarray) -> alt.Chart:
     """Perform a tsne dimensionality reduction on a dataset"""
     tsne = manifold.TSNE()
