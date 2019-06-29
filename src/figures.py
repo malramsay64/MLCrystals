@@ -124,7 +124,7 @@ def plot_snapshots(snapshots: HoomdFrame) -> Figure:
 
 
 def plot_configuration_grid(
-    snapshots: HoomdFrame, categories: np.ndarray, max_frames=3
+    snapshots: HoomdFrame, categories: np.ndarray, max_frames=3, remove_styling=False
 ) -> Figure:
     factors = np.unique(categories).astype(str)
     if len(factors) < 10:
@@ -132,19 +132,25 @@ def plot_configuration_grid(
     else:
         colormap = palettes.Category20_20
     cluster_assignment = np.split(categories, len(snapshots))
-    return _plot_grid(
-        [
-            plot_frame(
-                snap,
-                order_list=cluster,
-                categorical_colour=True,
-                colormap=colormap,
-                factors=factors,
-            )
-            for snap, cluster, i in zip(snapshots, cluster_assignment, count())
-            if i < max_frames
-        ]
-    )
+
+    grid = []
+    for snap, cluster, i in zip(snapshots, cluster_assignment, count()):
+        if i > max_frames:
+            break
+        fig = plot_frame(
+            snap,
+            order_list=cluster,
+            categorical_colour=True,
+            colormap=colormap,
+            factors=factors,
+        )
+
+        if remove_styling:
+            fig = style_snapshot(fig)
+
+        grid.append(fig)
+
+    return _plot_grid(grid)
 
 
 def plot_clustering(algorithm, X, snapshots, fit=True, max_frames=3):
@@ -206,6 +212,8 @@ def style_snapshot(figure: Figure) -> Figure:
     figure.ygrid.visible = False
     figure.toolbar_location = None
     figure.toolbar.logo = None
+    figure.outline_line_width = 0
+    figure.outline_line_alpha = 0
 
     return figure
 
