@@ -10,21 +10,15 @@
 
 import glob
 import logging
-from itertools import count, product
 from pathlib import Path
 from typing import List, Tuple
 
 import gsd.hoomd
-import matplotlib.pyplot as plt
 import numpy as np
-from bokeh import palettes
-from bokeh.plotting import gridplot
 from scipy.sparse import coo_matrix
 from sdanalysis import HoomdFrame
-from sdanalysis.figures import plot_frame
 from sdanalysis.order import compute_neighbours
 from sdanalysis.util import Variables, get_filename_vars
-from sklearn.metrics import confusion_matrix
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -84,42 +78,6 @@ def read_file(
             raise IndexError(f"Index {index} not found in trajectory.")
 
 
-def plot_grid(frames):
-    for frame in frames:
-        frame.plot_height = frame.plot_height // 3
-        frame.plot_width = frame.plot_width // 3
-    return gridplot(frames, ncols=3)
-
-
-def plot_configuration_grid(snapshots, categories, max_frames=3):
-    if len(np.unique(categories)) < 10:
-        colormap = palettes.Category10_10
-    else:
-        colormap = palettes.Category20_20
-    cluster_assignment = np.split(categories, len(snapshots))
-    return plot_grid(
-        [
-            plot_frame(
-                snap, order_list=cluster, categorical_colour=True, colormap=colormap
-            )
-            for snap, cluster, i in zip(snapshots, cluster_assignment, count())
-            if i < max_frames
-        ]
-    )
-
-
-def plot_clustering(algorithm, X, snapshots, fit=True, max_frames=3):
-    if fit:
-        clusters = algorithm.fit_predict(X)
-    else:
-        clusters = algorithm.predict(X)
-    return plot_configuration_grid(snapshots, clusters, max_frames)
-
-
-def plot_snapshots(snapshots):
-    return plot_grid([plot_frame(snap) for snap in snapshots])
-
-
 def classify_mols(snapshot, crystal, boundary_buffer=3.5, is_2d: bool = True):
     """Classify molecules as crystalline, amorphous or boundary."""
     mapping = {"liq": 0, "p2": 1, "p2gg": 2, "pg": 3, "None": 4}
@@ -156,41 +114,3 @@ def neighbour_connectivity(snapshot, max_neighbours=6, max_radius=5):
     )
     connectivity = coo_matrix((sparse_values, sparse_coordinates))
     return connectivity.toarray()
-
-
-def plot_confusion_matrix(
-    y_true, y_pred, classes, normalize=True, title="Confusion matrix", cmap=plt.cm.Blues
-):
-    """
-    This function prints and plots the confusion matrix.
-    Normalization can be applied by setting `normalize=True`.
-    """
-    cm = confusion_matrix(y_true, y_pred)
-
-    if normalize:
-        cm = cm.astype("float") / cm.sum(axis=1)[:, np.newaxis]
-        print("Normalized confusion matrix")
-    else:
-        print("Confusion matrix, without normalization")
-
-    plt.imshow(cm, interpolation="nearest", cmap=cmap)
-    plt.title(title)
-    plt.colorbar()
-    tick_marks = np.arange(len(classes))
-    plt.xticks(tick_marks, classes, rotation=45)
-    plt.yticks(tick_marks, classes)
-
-    fmt = ".2f" if normalize else "d"
-    thresh = cm.max() / 2.0
-    for i, j in product(range(cm.shape[0]), range(cm.shape[1])):
-        plt.text(
-            j,
-            i,
-            format(cm[i, j], fmt),
-            horizontalalignment="center",
-            color="white" if cm[i, j] > thresh else "black",
-        )
-
-    plt.tight_layout()
-    plt.ylabel("True label")
-    plt.xlabel("Predicted label")

@@ -13,6 +13,7 @@ notebook interface or on the command line.
 
 """
 
+from itertools import count, product
 from typing import Any, Dict, List, Tuple
 
 import altair as alt
@@ -21,11 +22,13 @@ import gsd.hoomd
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from bokeh import palettes, transform
 from bokeh.io import export_png
-from bokeh.plotting import Figure
+from bokeh.plotting import ColumnDataSource, Figure, figure, gridplot
 from sdanalysis import HoomdFrame
 from sdanalysis.figures import plot_frame
 from sklearn import manifold
+from sklearn.metrics import confusion_matrix
 
 
 def my_theme() -> Dict[str, Any]:
@@ -107,6 +110,89 @@ def cell_regions(
     return cell, liq, crys
 
 
+def _plot_grid(frames: Figure, ncols: int = 3) -> Figure:
+    """Plot a grid of frames."""
+    for frame in frames:
+        frame.plot_height = frame.plot_height // ncols
+        frame.plot_width = frame.plot_width // ncols
+    return gridplot(frames, ncols=ncols)
+
+
+def plot_snapshots(snapshots: HoomdFrame) -> Figure:
+    """Plot a collection of snapshots as a grid."""
+    return _plot_grid([plot_frame(snap) for snap in snapshots])
+
+
+def plot_configuration_grid(
+    snapshots: HoomdFrame, categories: np.ndarray, max_frames=3
+) -> Figure:
+    factors = np.unique(categories).astype(str)
+    if len(factors) < 10:
+        colormap = palettes.Category10_10
+    else:
+        colormap = palettes.Category20_20
+    cluster_assignment = np.split(categories, len(snapshots))
+    return _plot_grid(
+        [
+            plot_frame(
+                snap,
+                order_list=cluster,
+                categorical_colour=True,
+                colormap=colormap,
+                factors=factors,
+            )
+            for snap, cluster, i in zip(snapshots, cluster_assignment, count())
+            if i < max_frames
+        ]
+    )
+
+
+def plot_clustering(algorithm, X, snapshots, fit=True, max_frames=3):
+    if fit:
+        clusters = algorithm.fit_predict(X)
+    else:
+        clusters = algorithm.predict(X)
+    return plot_configuration_grid(snapshots, clusters, max_frames)
+
+
+def plot_confusion_matrix(
+    y_true, y_pred, classes, normalize=True, title="Confusion matrix", cmap=plt.cm.Blues
+):
+    """
+    This function prints and plots the confusion matrix.
+    Normalization can be applied by setting `normalize=True`.
+    """
+    cm = confusion_matrix(y_true, y_pred)
+
+    if normalize:
+        cm = cm.astype("float") / cm.sum(axis=1)[:, np.newaxis]
+        print("Normalized confusion matrix")
+    else:
+        print("Confusion matrix, without normalization")
+
+    plt.imshow(cm, interpolation="nearest", cmap=cmap)
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, rotation=45)
+    plt.yticks(tick_marks, classes)
+
+    fmt = ".2f" if normalize else "d"
+    thresh = cm.max() / 2.0
+    for i, j in product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(
+            j,
+            i,
+            format(cm[i, j], fmt),
+            horizontalalignment="center",
+            color="white" if cm[i, j] > thresh else "black",
+        )
+
+    plt.tight_layout()
+    plt.ylabel("True label")
+    plt.xlabel("Predicted label")
+
+
 def style_snapshot(figure: Figure) -> Figure:
     """Style a bokeh figure as a configuration snapshot.
 
@@ -168,16 +254,22 @@ def plot_labelled_config(snapshot: HoomdFrame) -> Figure:
     return style_snapshot(fig)
 
 
-def plot_dimensionality_reduction(X, y):
+def plot_dimensionality_reduction(X: np.ndarray, y: np.ndarray) -> alt.Chart:
     data = pd.DataFrame({"dim1": X[:, 0], "dim2": X[:, 1], "class": y})
+
+    colourscheme = "category10"
+    if len(np.unique(y)) > 10:
+        colourscheme = "category20"
 
     chart = (
         alt.Chart(data.sample(n=3000))
-        .mark_circle(opacity=0.5)
+        .mark_circle(opacity=1)
         .encode(
             x=alt.X("dim1:Q", title="Dimension 1"),
             y=alt.Y("dim2:Q", title="Dimension 2"),
-            color=alt.Color("class:N", title="Class"),
+            color=alt.Color(
+                "class:N", title="Class", scale=alt.Scale(scheme=colourscheme)
+            ),
         )
     )
 
@@ -185,33 +277,11 @@ def plot_dimensionality_reduction(X, y):
 
 
 def plot_tsne_reduction(x_values: np.ndarray, y_values: np.ndarray) -> alt.Chart:
-    """Perform a tsne dimensionality reduction on a dataset"""
+    """Perform a TSNE dimensionality reduction on a dataset"""
     tsne = manifold.TSNE()
     x_transformed = tsne.fit_transform(x_values)
 
-    data = pd.DataFrame(
-        {
-            "dim1": x_transformed[:, 0],
-            "dim2": x_transformed[:, 1],
-            "class": pd.Categorical.from_codes(
-                y_values, ["Liquid", "p2", "p2gg", "pg"]
-            ),
-        }
-    )
-
-    use_my_theme()
-
-    chart = (
-        alt.Chart(data.sample(n=3000))
-        .mark_circle(opacity=0.5)
-        .encode(
-            x=alt.X("dim1:Q", title="Dimension 1"),
-            y=alt.Y("dim2:Q", title="Dimension 2"),
-            color=alt.Color("class:N", title="Class"),
-        )
-    )
-
-    return chart
+    return plot_dimensionality_reduction(x_transformed, y_values)
 
 
 @main.command()
