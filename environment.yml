@@ -15,7 +15,7 @@ dependencies:
   - pylint
   - nbdime
   # Interactive analysis
-  - malramsay::sdanalysis=0.7.15
+  - malramsay::sdanalysis=0.8.2
   - scikit-learn==0.21.*
   - umap-learn==0.3.9
   - jupyter
