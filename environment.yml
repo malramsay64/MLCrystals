@@ -18,6 +18,7 @@ dependencies:
   - malramsay::sdanalysis=0.8.2
   - scikit-learn==0.21.*
   - umap-learn==0.3.9
+  - hdbscan==0.8.22
   - jupyter
   - altair=2.*
   - nbdime>=1.0
