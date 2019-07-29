@@ -2,28 +2,26 @@ name: MLCrystals
 channels:
   - defaults
   - conda-forge
-  - malramsay
-  - glotzer
 dependencies:
   # Running Simulations
-  - python
+  - python=3.6
   # Dev tools
-  - pytest
-  - mypy
-  - black
-  - isort
-  - pylint
-  - nbdime
+  - pytest=5.0.*
+  - mypy=0.720
+  - black=19.3b0
+  - isort=4.3.*
+  - pylint=2.3.1
+  - nbdime=1.0.*
+  - jupytext=1.2.*
   # Interactive analysis
   - malramsay::sdanalysis=0.8.2
   - scikit-learn==0.21.*
-  - umap-learn==0.3.9
-  - hdbscan==0.8.22
-  - jupyter
-  - altair=2.*
-  - nbdime>=1.0
-  - matplotlib
-  - pandas
-  - pillow
-  - selenium
-  - phantomjs
+  - umap-learn==0.3.*
+  - hdbscan~=0.8.22
+  - jupyter=1.0.0
+  - altair=3.1.*
+  - matplotlib=3.1.*
+  - pandas=0.25.*
+  - pillow=6.1.*
+  - selenium=3.141.*
+  - phantomjs=2.1.*
