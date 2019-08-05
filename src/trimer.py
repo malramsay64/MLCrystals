@@ -75,7 +75,7 @@ def read_file(
         try:
             return HoomdFrame(trj[index])
         except IndexError:
-            raise IndexError(f"Index {index} not found in trajectory.")
+            raise IndexError(f"Index {index} not found in trajectory of length {len(trj)}.")
 
 
 def classify_mols(snapshot, crystal, boundary_buffer=3.5, is_2d: bool = True):
