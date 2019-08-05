@@ -14,6 +14,15 @@ talks: talks/2018-11-06-ICYRAM.pdf ## Compile talks
 	latexmk $< -output-directory=talks/output -xelatex
 	cp talks/output/$(notdir $@) $@
 
+
+all_notebooks = $(notdir $(wildcard notebooks/*.ipynb))
+
+.PHONY: notebooks
+notebooks: $(all_notebooks)
+
+%.ipynb:
+	cd notebooks && jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=None --execute $@
+
 .PHONY: figures
 figures:
 	python3 src/figures.py labelled-config data/simulation/dataset/output/dump-Trimer-P1.00-T0.45-p2.gsd -i 2
