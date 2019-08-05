@@ -25,3 +25,4 @@ dependencies:
   - pillow=6.1.*
   - selenium=3.141.*
   - phantomjs=2.1.*
+  - geckodriver=0.24.0
