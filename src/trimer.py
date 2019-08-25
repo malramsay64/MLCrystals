@@ -44,7 +44,7 @@ def read_all_files(
     """
     pathname = Path(pathname)
     snapshots = []
-    for filename in glob.glob(str(pathname / pattern)):
+    for filename in sorted(glob.glob(str(pathname / pattern))):
         logger.debug("Reading %s", Path(filename).stem)
         with gsd.hoomd.open(str(filename)) as trj:
             try:
