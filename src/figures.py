@@ -120,7 +120,7 @@ def _plot_grid(frames: Figure, ncols: int = 3) -> Figure:
 
 def plot_snapshots(snapshots: HoomdFrame) -> Figure:
     """Plot a collection of snapshots as a grid."""
-    return _plot_grid([plot_frame(snap) for snap in snapshots])
+    return _plot_grid([style_snapshot(plot_frame(snap)) for snap in snapshots])
 
 
 def plot_configuration_grid(
