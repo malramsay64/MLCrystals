@@ -14,6 +14,7 @@ notebook interface or on the command line.
 """
 
 from itertools import count, product
+from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
 import altair as alt
@@ -22,9 +23,9 @@ import gsd.hoomd
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from bokeh import palettes, transform
+from bokeh import palettes
 from bokeh.io import export_png
-from bokeh.plotting import ColumnDataSource, Figure, figure, gridplot
+from bokeh.plotting import ColumnDataSource, Figure, gridplot
 from sdanalysis import HoomdFrame
 from sdanalysis.figures import plot_frame
 from sklearn import manifold
@@ -38,7 +39,23 @@ def my_theme() -> Dict[str, Any]:
     and removing the grid from the figure which is distracting.
 
     """
-    return {"config": {"view": {"height": 400, "width": 600}, "axis": {"grid": False}}}
+    return {
+        "config": {
+            "view": {"height": 400, "width": 600},
+            "legend": {"titleFontSize": 20, "labelFontSize": 16},
+            "axis": {"grid": False, "labelFontSize": 16, "titleFontSize": 20},
+            "header": {"titleFontSize": 22, "labelFontSize": 18},
+            "background": "white",
+        }
+    }
+
+
+def json_dir(data, data_dir="altairdata"):
+    data_dir = Path(data_dir)
+    data_dir.mkdir(exist_ok=True)
+    return alt.pipe(
+        data, alt.to_json(filename=str(data_dir / "{prefix}-{hash}.{extension}"))
+    )
 
 
 def use_my_theme():
@@ -46,6 +63,17 @@ def use_my_theme():
     # register and enable the theme
     alt.themes.register("my_theme", my_theme)
     alt.themes.enable("my_theme")
+
+
+def use_data_transformer():
+    """Register and use an altair data transformer"""
+    alt.data_transformers.register("json_dir", json_dir)
+    alt.data_transformers.enable("json_dir")
+
+
+# This configures Altair to behave as expected when I load this module
+use_my_theme()
+use_data_transformer()
 
 
 def cell_regions(
