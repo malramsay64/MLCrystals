@@ -304,7 +304,7 @@ def plot_dimensionality_reduction(X: np.ndarray, y: np.ndarray) -> alt.Chart:
             x=alt.X("dim1:Q", title="Dimension 1"),
             y=alt.Y("dim2:Q", title="Dimension 2"),
             color=alt.Color(
-                "class:N", title="Class", scale=alt.Scale(scheme=colourscheme)
+                "class:N", title="Cluster", scale=alt.Scale(scheme=colourscheme)
             ),
         )
     )
