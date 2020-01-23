@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from bokeh import palettes
-from bokeh.io import export_png
+from bokeh.io import export_svgs
 from bokeh.plotting import ColumnDataSource, Figure, gridplot
 from sdanalysis import HoomdFrame
 from sdanalysis.figures import plot_frame
@@ -342,7 +342,8 @@ def labelled_config(infile, index):
 
     fig = plot_labelled_config(snap)
 
-    export_png(fig, "figures/labelled_config.png", height=1600, width=3200)
+    fig.output_backend = "svg"
+    export_svgs(fig, "figures/labelled_config.png", height=1600, width=3200)
 
 
 if __name__ == "__main__":
