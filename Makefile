@@ -23,6 +23,10 @@ notebooks: $(all_notebooks)
 %.ipynb:
 	cd notebooks && jupyter nbconvert --to notebook --ExecutePreprocessor.timeout=None --execute $@
 
+.PHONY: sync
+sync: ##  format the juptyer representations of the notebooks
+	jupytext --sync --pipe black notebooks/*.ipynb
+
 .PHONY: figures
 figures:
 	python3 src/figures.py labelled-config data/simulation/dataset/output/dump-Trimer-P1.00-T0.45-p2.gsd -i 2
