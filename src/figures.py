@@ -290,19 +290,28 @@ def plot_labelled_config(snapshot: HoomdFrame) -> Figure:
     return style_snapshot(fig)
 
 
-def plot_dimensionality_reduction(X: np.ndarray, y: np.ndarray) -> alt.Chart:
+def plot_dimensionality_reduction(
+    X: np.ndarray, y: np.ndarray, axis_labels: bool = True
+) -> alt.Chart:
     data = pd.DataFrame({"dim1": X[:, 0], "dim2": X[:, 1], "class": y})
 
     colourscheme = "category10"
     if len(np.unique(y)) > 10:
         colourscheme = "category20"
 
+    if axis_labels:
+        xlabel = "Dimension 1"
+        ylabel = "Dimension 2"
+    else:
+        xlabel = ""
+        ylabel = ""
+
     chart = (
         alt.Chart(data.sample(n=3000))
         .mark_circle(opacity=1)
         .encode(
-            x=alt.X("dim1:Q", title="Dimension 1"),
-            y=alt.Y("dim2:Q", title="Dimension 2"),
+            x=alt.X("dim1:Q", title=xlabel),
+            y=alt.Y("dim2:Q", title=ylabel),
             color=alt.Color(
                 "class:N", title="Cluster", scale=alt.Scale(scheme=colourscheme)
             ),
